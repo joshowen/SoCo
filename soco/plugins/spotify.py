@@ -69,11 +69,11 @@ class SpotifyTrack(object):
                                        'xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/">' \
                                 '<item id="{0}" parentID="{1}" restricted="true">' \
                                     '<dc:title>{2}</dc:title>' \
-                                   ' <upnp:class>object.item.audioItem.musicTrack</upnp:class>' \
-                                   ' <desc id="cdudn" nameSpace="urn:schemas-rinconnetworks-com:metadata-1-0/">SA_RINCON3079_X_#Svc3079-0-Token</desc>' \
+                                   '<upnp:class>object.item.audioItem.musicTrack</upnp:class>' \
+                                   '<desc id="cdudn" nameSpace="urn:schemas-rinconnetworks-com:metadata-1-0/">SA_RINCON3079_X_#Svc3079-0-Token</desc>' \
                                 '</item>' \
-                            '</DIDL-Lite>'.format(str(random.randint(10000000, 99999999)) + self.spotify_uri.replace(':', '%3a'),
-                                                  str(random.randint(10000000, 99999999)) + self.album_uri.replace(':', '%3a'),
+                            '</DIDL-Lite>'.format(str(random.randint(10000000, 11999999)) + self.spotify_uri.replace(':', '%3a'),
+                                                  str(random.randint(10000000, 11999999)) + self.album_uri.replace(':', '%3a'),
                                                   self.title)
             didl_metadata = didl_metadata.encode('utf-8')
             return didl_metadata
