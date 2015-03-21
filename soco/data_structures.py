@@ -49,6 +49,7 @@ def to_didl_string(*args):
             'xmlns': "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/",
             'xmlns:dc': "http://purl.org/dc/elements/1.1/",
             'xmlns:upnp': "urn:schemas-upnp-org:metadata-1-0/upnp/",
+            'xmlns:r': "urn:schemas-rinconnetworks-com:metadata-1-0/",
         })
     for arg in args:
         didl.append(arg.to_element())
@@ -325,6 +326,7 @@ class DidlObject(DidlMetaClass(str('DidlMetaClass'), (object,), {})):
         # only seems to use one, so we won't bother with a list
         self.desc = desc
 
+        print self._translation
         for key, value in kwargs.items():
             # For each attribute, check to see if this class allows it
             if key not in self._translation:
@@ -531,6 +533,7 @@ class DidlObject(DidlMetaClass(str('DidlMetaClass'), (object,), {})):
                 'xmlns': "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/",
                 'xmlns:dc': "http://purl.org/dc/elements/1.1/",
                 'xmlns:upnp': "urn:schemas-upnp-org:metadata-1-0/upnp/",
+                'xmlns:r': "urn:schemas-rinconnetworks-com:metadata-1-0/",
             })
         elt_attrib.update({
             'parentID': self.parent_id,
@@ -543,8 +546,8 @@ class DidlObject(DidlMetaClass(str('DidlMetaClass'), (object,), {})):
         XML.SubElement(elt, 'dc:title').text = self.title
 
         # Add in any resources
-        for resource in self.resources:
-            elt.append(resource.to_element())
+#         for resource in self.resources:
+#             elt.append(resource.to_element())
 
         # Add the rest of the metadata attributes (i.e all those listed in
         # _translation) as sub-elements of the item element.

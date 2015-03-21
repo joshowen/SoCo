@@ -3,11 +3,15 @@
 
 """ Spotify Plugin """
 
+import random
+
 import requests
 
-from ..xml import XML
-from ..compat import quote_plus
+from soco.data_structures import DidlResource, DidlMusicTrack, DidlObject
+
 from . import SoCoPlugin
+from ..compat import quote_plus
+from ..xml import XML
 
 
 __all__ = ['Spotify']
@@ -59,24 +63,20 @@ class SpotifyTrack(object):
         if ('spotify_uri' in self.data and 'title' in self.data and
                 'album_uri' in self.data):
 
-            didl_metadata = """\
-<DIDL-Lite xmlns:dc="http://purl.org/dc/elements/1.1/"
-           xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"
-           xmlns:r="urn:schemas-rinconnetworks-com:metadata-1-0/"
-           xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/">
-    <item id="{0}" parentID="{1}" restricted="true">
-        <dc:title>{2}</dc:title>
-        <upnp:class>object.item.audioItem.musicTrack</upnp:class>
-        <desc id="cdudn"
-            nameSpace="urn:schemas-rinconnetworks-com:metadata-1-0/">
-            SA_RINCON2311_X_#Svc2311-0-Token
-        </desc>
-    </item>
-</DIDL-Lite>""".format(quote_plus(self.data['spotify_uri']),
-                       quote_plus(self.data['album_uri']),
-                       quote_plus(self.data['title']))
+            didl_metadata = '<DIDL-Lite xmlns:dc="http://purl.org/dc/elements/1.1/" ' \
+                                       'xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" ' \
+                                       'xmlns:r="urn:schemas-rinconnetworks-com:metadata-1-0/" ' \
+                                       'xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/">' \
+                                '<item id="{0}" parentID="{1}" restricted="true">' \
+                                    '<dc:title>{2}</dc:title>' \
+                                   ' <upnp:class>object.item.audioItem.musicTrack</upnp:class>' \
+                                   ' <desc id="cdudn" nameSpace="urn:schemas-rinconnetworks-com:metadata-1-0/">SA_RINCON3079_X_#Svc3079-0-Token</desc>' \
+                                '</item>' \
+                            '</DIDL-Lite>'.format(str(random.randint(10000000, 99999999)) + self.spotify_uri.replace(':', '%3a'),
+                                                  str(random.randint(10000000, 99999999)) + self.album_uri.replace(':', '%3a'),
+                                                  self.title)
             didl_metadata = didl_metadata.encode('utf-8')
-            return XML.fromstring(didl_metadata)
+            return didl_metadata
         else:
             return None
 
@@ -87,7 +87,7 @@ class SpotifyTrack(object):
             track = self.data['spotify_uri']
             track = track.encode('utf-8')
             track = quote_plus(track)
-            return 'x-sonos-spotify:' + track
+            return 'x-sonos-spotify:' + track + '?sid=12&flags=32&sn=1'
         else:
             return ''
 
@@ -143,7 +143,7 @@ class SpotifyAlbum(object):
             album = self.data['spotify_uri']
             album = album.encode('utf-8')
             album = quote_plus(album)
-            return "x-rincon-cpcontainer:" + album
+            return "x-rincon-cpcontainer:" + album + '?sid=12'
         else:
             return ""
 
@@ -222,9 +222,11 @@ class Spotify(SoCoPlugin):
 
     def add_track_to_queue(self, spotify_track):
         """ Add a spotify track to the queue using the SpotifyTrack class"""
+
         if not spotify_track.satisfied():
             spotify_track = self._add_track_metadata(spotify_track)
-
+#         res = [DidlResource(uri=spotify_album.uri, protocol_info="x-rincon-cpcontainer:*:*:*"), ]
+#         item = DidlObject(spotify_album.title, '', '0004006cspotify:album:02tTjKlh9iQ5jlWYPbKLJZ', resources=res)
         return self.soco.add_to_queue(spotify_track)
 
     def add_album_to_queue(self, spotify_album):
@@ -232,4 +234,7 @@ class Spotify(SoCoPlugin):
         if not spotify_album.satisfied():
             spotify_album = self._add_album_metadata(spotify_album)
 
-        return self.soco.add_to_queue(spotify_album)
+        res = [DidlResource(uri=spotify_album.uri, protocol_info="x-rincon-playlist:*:*:*"), ]
+        item = DidlObject(spotify_album.title, '', spotify_album.spotify_uri, resources=res)
+
+        return self.soco.add_to_queue(item)

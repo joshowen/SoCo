@@ -16,10 +16,10 @@ from .services import RenderingControl, AVTransport, ZoneGroupTopology
 from .services import AlarmClock
 from .groups import ZoneGroup
 from .exceptions import DIDLMetadataError, SoCoUPnPException
-from .data_structures import DidlPlaylistContainer,\
-    SearchResult, Queue, DidlObject, DidlMusicAlbum,\
+from .data_structures import DidlPlaylistContainer, \
+    SearchResult, Queue, DidlObject, DidlMusicAlbum, \
     from_didl_string, to_didl_string, DidlResource
-from .utils import really_utf8, camel_to_underscore, really_unicode,\
+from .utils import really_utf8, camel_to_underscore, really_unicode, \
     url_escape_path
 from .xml import XML
 from soco import config
@@ -69,7 +69,7 @@ class _ArgsSingleton(type):
         return cls._instances[key][args]
 
 
-class _SocoSingletonBase(  # pylint: disable=too-few-public-methods,no-init
+class _SocoSingletonBase(# pylint: disable=too-few-public-methods,no-init
         _ArgsSingleton(str('ArgsSingletonMeta'), (object,), {})):
 
     """ The base class for the SoCo class.
@@ -189,7 +189,7 @@ class SoCo(_SocoSingletonBase):
             socket.inet_aton(ip_address)
         except socket.error:
             raise ValueError("Not a valid IP address string")
-        #: The speaker's ip address
+        # : The speaker's ip address
         self.ip_address = ip_address
         self.speaker_info = {}  # Stores information about the current speaker
 
@@ -1322,7 +1322,7 @@ class SoCo(_SocoSingletonBase):
 
             # Try and get this batch of results
             try:
-                response, metadata =\
+                response, metadata = \
                     self._music_lib_search(search, start, max_items)
             except SoCoUPnPException as exception:
                 # 'No such object' UPnP errors
@@ -1395,7 +1395,7 @@ class SoCo(_SocoSingletonBase):
             search += ':' + url_escape_path(really_unicode(search_term))
 
         try:
-            response, metadata =\
+            response, metadata = \
                 self._music_lib_search(search, start, max_items)
         except SoCoUPnPException as exception:
             # 'No such object' UPnP errors
@@ -1515,14 +1515,19 @@ class SoCo(_SocoSingletonBase):
 
     def add_to_queue(self, queueable_item):
         """ Adds a queueable item to the queue """
-        metadata = to_didl_string(queueable_item)
-        metadata.encode('utf-8')
+        if hasattr(queueable_item, 'didl_metadata'):
+            metadata = queueable_item.didl_metadata
+            uri = queueable_item.uri
+        else:
+            metadata = to_didl_string(queueable_item)
+            metadata = metadata.encode('utf-8')
+            uri = queueable_item.resources[0].uri
         response = self.avTransport.AddURIToQueue([
             ('InstanceID', 0),
-            ('EnqueuedURI', queueable_item.resources[0].uri),
+            ('EnqueuedURI', uri),
             ('EnqueuedURIMetaData', metadata),
             ('DesiredFirstTrackNumberEnqueued', 0),
-            ('EnqueueAsNext', 1)
+            ('EnqueueAsNext', 0)
         ])
         qnumber = response['FirstTrackNumberEnqueued']
         return int(qnumber)

@@ -38,3 +38,8 @@ coverage.xml
 
 # Installer logs
 pip-log.txt
+.project
+
+.pydevproject
+
+.settings/org.eclipse.core.resources.prefs
